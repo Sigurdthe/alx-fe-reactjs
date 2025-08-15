@@ -1,23 +1,28 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-const AddRecipeForm = () => {
+const AddRecipeForm = ({ onAddRecipe }) => {
   const [title, setTitle] = useState("");
   const [ingredients, setIngredients] = useState("");
   const [instructions, setInstructions] = useState("");
   const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // Simple validation
+  // Validation function
+  const validate = () => {
     const newErrors = {};
     if (!title.trim()) newErrors.title = "Title is required";
     if (!ingredients.trim() || ingredients.split("\n").length < 2)
       newErrors.ingredients = "Enter at least 2 ingredients (one per line)";
     if (!instructions.trim() || instructions.split("\n").length < 2)
       newErrors.instructions = "Enter at least 2 steps (one per line)";
+    return newErrors;
+  };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -26,20 +31,22 @@ const AddRecipeForm = () => {
     const newRecipe = {
       id: Date.now(),
       title,
-      summary: instructions.split("\n")[0], // first line as summary
+      summary: instructions.split("\n")[0],
       image: "https://via.placeholder.com/150",
       ingredients: ingredients.split("\n"),
       instructions: instructions.split("\n"),
     };
 
-    console.log("New Recipe Submitted:", newRecipe);
+    if (onAddRecipe) onAddRecipe(newRecipe);
 
     // Reset form
     setTitle("");
     setIngredients("");
     setInstructions("");
     setErrors({});
-    alert("Recipe submitted! (Check console for details)");
+
+    alert("Recipe submitted!");
+    navigate("/");
   };
 
   return (
@@ -47,14 +54,13 @@ const AddRecipeForm = () => {
       <Link to="/" className="text-blue-500 underline mb-4 inline-block">
         &larr; Back to Home
       </Link>
+
       <h1 className="text-3xl font-bold text-blue-600 mb-6">Add New Recipe</h1>
 
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg">
         {/* Title */}
         <div className="mb-4">
-          <label className="block text-gray-700 font-semibold mb-2">
-            Recipe Title
-          </label>
+          <label className="block text-gray-700 font-semibold mb-2">Recipe Title</label>
           <input
             type="text"
             value={title}
@@ -68,9 +74,7 @@ const AddRecipeForm = () => {
 
         {/* Ingredients */}
         <div className="mb-4">
-          <label className="block text-gray-700 font-semibold mb-2">
-            Ingredients (one per line)
-          </label>
+          <label className="block text-gray-700 font-semibold mb-2">Ingredients (one per line)</label>
           <textarea
             value={ingredients}
             onChange={(e) => setIngredients(e.target.value)}
@@ -86,9 +90,7 @@ const AddRecipeForm = () => {
 
         {/* Instructions */}
         <div className="mb-4">
-          <label className="block text-gray-700 font-semibold mb-2">
-            Instructions (one per line)
-          </label>
+          <label className="block text-gray-700 font-semibold mb-2">Instructions (one per line)</label>
           <textarea
             value={instructions}
             onChange={(e) => setInstructions(e.target.value)}
